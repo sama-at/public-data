@@ -2,7 +2,6 @@
 Minimal Streamlit app to display task creation leaderboard.
 """
 import streamlit as st
-import pandas as pd
 import plotly.express as px
 import requests
 import json
@@ -51,21 +50,19 @@ def main():
     # Prepare data for the chart
     task_counts = stats.get('task_counts', {})
     if task_counts:
-        df = pd.DataFrame(
-            list(task_counts.items()),
-            columns=['Creator', 'Tasks']
-        )
+        # Convert to lists for plotly
+        creators = list(task_counts.keys())
+        tasks = list(task_counts.values())
         
         # Create bar chart with Plotly
         fig = px.bar(
-            df,
-            x='Creator',
-            y='Tasks',
+            x=creators,
+            y=tasks,
             title='Tasks Created by Each Person',
-            labels={'Tasks': 'Number of Tasks', 'Creator': 'Creator'},
-            color='Tasks',
+            labels={'x': 'Creator', 'y': 'Number of Tasks'},
+            color=tasks,
             color_continuous_scale='Viridis',
-            text='Tasks'
+            text=tasks
         )
         
         # Update layout for better appearance
@@ -83,11 +80,12 @@ def main():
         
         # Display data table
         with st.expander("View Data Table"):
-            st.dataframe(
-                df.sort_values('Tasks', ascending=False),
-                use_container_width=True,
-                hide_index=True
-            )
+            # Create table data manually
+            table_data = [{"Creator": creator, "Tasks": count} 
+                         for creator, count in sorted(task_counts.items(), 
+                                                    key=lambda x: x[1], 
+                                                    reverse=True)]
+            st.table(table_data)
     else:
         st.info("No task data available yet.")
     
