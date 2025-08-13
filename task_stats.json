@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-08-13T03:25:16.070525Z",
-  "total_tasks": 38,
+  "timestamp": "2025-08-13T03:52:12.484962Z",
+  "total_tasks": 37,
   "total_creators": 7,
   "task_counts": {
     "chris": 12,
@@ -8,8 +8,8 @@
     "coco": 5,
     "aviv": 4,
     "aldo": 4,
-    "joe": 3,
-    "addison": 3
+    "addison": 3,
+    "joe": 2
   },
-  "updated_date": "2025-08-13 03:25 UTC"
+  "updated_date": "2025-08-13 03:52 UTC"
 }
