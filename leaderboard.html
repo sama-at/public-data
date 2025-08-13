@@ -175,7 +175,7 @@
         <div id="content" style="display: none;">
             <div class="progress-section">
                 <div class="progress-container">
-                    <div class="progress-title">Progress Toward Goal</div>
+                    <div class="progress-title">Progress Toward Task Creation Goal</div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
                         <div class="progress-text" id="progressText">0 / 80</div>
@@ -183,9 +183,26 @@
                     <div class="progress-label">Tasks completed toward 80 task goal</div>
                 </div>
             </div>
+
+            
             
             <div class="chart-container">
                 <canvas id="taskChart"></canvas>
+            </div>
+            
+            <div class="progress-section">
+                <div class="progress-container">
+                    <div class="progress-title">Progress Toward Task Solving Goal</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="solveProgressFill" style="width: 0%;"></div>
+                        <div class="progress-text" id="solveProgressText">0.00 / 2.00</div>
+                    </div>
+                    <div class="progress-label" id="solveProgressLabel">0 / 0 solves</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="solvedChart"></canvas>
             </div>
             
 
@@ -198,7 +215,9 @@
 
     <script>
         const STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/task_stats.json';
+        const SOLVED_STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/solved_task_stats.json';
         let chart = null;
+        let solvedChart = null;
 
         // Color palette for the chart
         const colors = [
@@ -217,25 +236,43 @@
             contentEl.style.display = 'none';
             
             try {
-                const response = await fetch(STATS_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                const [createdResp, solvedResp] = await Promise.all([
+                    fetch(STATS_URL),
+                    fetch(SOLVED_STATS_URL)
+                ]);
+                if (!createdResp.ok) {
+                    throw new Error(`HTTP error (created)! status: ${createdResp.status}`);
+                }
+                if (!solvedResp.ok) {
+                    throw new Error(`HTTP error (solved)! status: ${solvedResp.status}`);
                 }
                 
-                const data = await response.json();
+                const [data, solvedData] = await Promise.all([
+                    createdResp.json(),
+                    solvedResp.json()
+                ]);
                 
-                // Update progress bar
+                // Update creation progress bar
                 const totalTasks = data.total_tasks || 0;
                 const goalTasks = 80;
                 const progressPercent = Math.min((totalTasks / goalTasks) * 100, 100);
-                
                 document.getElementById('progressFill').style.width = progressPercent + '%';
                 document.getElementById('progressText').textContent = `${totalTasks} / ${goalTasks}`;
+
+                // Update solving progress bar
+                const totalSolved = solvedData.total_solved_tasks || 0;
+                const avgSolvesPerTask = totalTasks > 0 ? (totalSolved / totalTasks) : 0;
+                const goalSolves = 2 * totalTasks; // 2 solves per task
+                const solveProgressPercent = Math.min((avgSolvesPerTask / 2) * 100, 100);
+                document.getElementById('solveProgressFill').style.width = solveProgressPercent + '%';
+                document.getElementById('solveProgressText').textContent = `${avgSolvesPerTask.toFixed(2)} / 2 sol'ns per task`;
+                document.getElementById('solveProgressLabel').textContent = `We have ${totalSolved} / ${goalSolves} total solving sessions`;
                 document.getElementById('lastUpdated').textContent = 
                     `Last updated: ${data.updated_date || 'Unknown'}`;
                 
                 // Update chart
                 updateChart(data.task_counts || {});
+                updateSolvedChart(solvedData.solved_task_counts || {});
                 
 
                 
@@ -338,6 +375,106 @@
                             title: {
                                 display: true,
                                 text: 'Creator',
+                                color: '#374151',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        function updateSolvedChart(solvedCounts) {
+            const ctx = document.getElementById('solvedChart').getContext('2d');
+            
+            const solvers = Object.keys(solvedCounts);
+            const solved = Object.values(solvedCounts);
+            
+            if (solvedChart) {
+                solvedChart.destroy();
+            }
+            
+            solvedChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: solvers,
+                    datasets: [{
+                        label: 'Number of Solved Tasks',
+                        data: solved,
+                        backgroundColor: colors.slice(0, solvers.length),
+                        borderColor: colors.slice(0, solvers.length).map(color => color + '80'),
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tasks Solved by Each Person',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            color: '#1f2937'
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#374151',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#f9fafb',
+                            borderColor: '#6b7280',
+                            borderWidth: 1,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Solved: ${context.parsed.x}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                color: '#e5e7eb'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Solved Tasks',
+                                color: '#374151',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#6b7280',
+                                maxRotation: 45
+                            },
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Solver',
                                 color: '#374151',
                                 font: {
                                     weight: 'bold'
