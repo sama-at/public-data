@@ -1,11 +1,7 @@
 {
-  "timestamp": "2025-08-14T18:28:50.157865Z",
-  "total_solved_tasks": 69,
-  "total_solvers": 3,
-  "solved_task_counts": {
-    "sam": 51,
-    "chris": 17,
-    "aldo": 1
-  },
-  "updated_date": "2025-08-14 18:28 UTC"
+  "timestamp": "2025-08-15T00:55:01.097964Z",
+  "total_solved_tasks": 0,
+  "total_solvers": 0,
+  "solved_task_counts": {},
+  "updated_date": "2025-08-15 00:55 UTC"
 }
