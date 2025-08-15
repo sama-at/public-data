@@ -175,31 +175,23 @@
         <div id="content" style="display: none;">
             <div class="progress-section">
                 <div class="progress-container">
-                    <div class="progress-title">Progress Toward Task Creation Goal</div>
+                    <div class="progress-title">Progress Toward Verified Task Goal</div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
                         <div class="progress-text" id="progressText">0 / 80</div>
                     </div>
-                    <div class="progress-label">Tasks completed toward 80 task goal</div>
+                    <div class="progress-label">Verified tasks completed toward 80 task goal</div>
                 </div>
             </div>
 
-            
-            
+            <div class="chart-container">
+                <canvas id="verifiedTaskChart"></canvas>
+            </div>
             <div class="chart-container">
                 <canvas id="taskChart"></canvas>
             </div>
             
-            <div class="progress-section">
-                <div class="progress-container">
-                    <div class="progress-title">Progress Toward Task Solving Goal</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="solveProgressFill" style="width: 0%;"></div>
-                        <div class="progress-text" id="solveProgressText">0.00 / 2.00</div>
-                    </div>
-                    <div class="progress-label" id="solveProgressLabel">0 / 0 solves</div>
-                </div>
-            </div>
+            
 
             <div class="chart-container">
                 <canvas id="solvedChart"></canvas>
@@ -214,9 +206,12 @@
     </div>
 
     <script>
-        const STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/task_stats.json';
-        const SOLVED_STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/solved_task_stats.json';
+        // const STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/task_stats.json';
+        const STATS_URL = 'task_stats.json';
+        // const SOLVED_STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/solved_task_stats.json';
+        const SOLVED_STATS_URL = 'solved_task_stats.json';
         let chart = null;
+        let verifiedChart = null;
         let solvedChart = null;
 
         // Color palette for the chart
@@ -252,29 +247,19 @@
                     solvedResp.json()
                 ]);
                 
-                // Update creation progress bar
-                const totalTasks = data.total_tasks || 0;
-                const goalTasks = 80;
-                const progressPercent = Math.min((totalTasks / goalTasks) * 100, 100);
+                // Update verified task progress bar
+                const totalVerified = Object.values(data.verified_task_counts || {}).reduce((sum, count) => sum + count, 0);
+                const goalVerified = 80;
+                const progressPercent = Math.min((totalVerified / goalVerified) * 100, 100);
                 document.getElementById('progressFill').style.width = progressPercent + '%';
-                document.getElementById('progressText').textContent = `${totalTasks} / ${goalTasks}`;
-
-                // Update solving progress bar
-                const totalSolved = solvedData.total_solved_tasks || 0;
-                const avgSolvesPerTask = totalTasks > 0 ? (totalSolved / totalTasks) : 0;
-                const goalSolves = 2 * totalTasks; // 2 solves per task
-                const solveProgressPercent = Math.min((avgSolvesPerTask / 2) * 100, 100);
-                document.getElementById('solveProgressFill').style.width = solveProgressPercent + '%';
-                document.getElementById('solveProgressText').textContent = `${avgSolvesPerTask.toFixed(2)} / 2 sol'ns per task`;
-                document.getElementById('solveProgressLabel').textContent = `We have ${totalSolved} / ${goalSolves} total solving sessions`;
+                document.getElementById('progressText').textContent = `${totalVerified} / ${goalVerified}`;
                 document.getElementById('lastUpdated').textContent = 
                     `Last updated: ${data.updated_date || 'Unknown'}`;
                 
-                // Update chart
-                updateChart(data.task_counts || {});
-                updateSolvedChart(solvedData.solved_task_counts || {});
-                
-
+                // Update charts
+                updateVerifiedChart(data.verified_task_counts || {});
+                updateChart(data.original_task_counts || {}, data.task_edit_counts || {});
+                updateSolvedChart(solvedData.session_counts || {}, solvedData.solved_task_counts || {});
                 
                 // Show content
                 loadingEl.style.display = 'none';
@@ -287,12 +272,19 @@
             }
         }
 
-        function updateChart(taskCounts) {
+        function updateChart(originalTaskCounts, taskEditCounts) {
             const ctx = document.getElementById('taskChart').getContext('2d');
             
-            // Prepare data
-            const creators = Object.keys(taskCounts);
-            const tasks = Object.values(taskCounts);
+            // Get all unique creators from both datasets
+            const allCreators = new Set([
+                ...Object.keys(originalTaskCounts),
+                ...Object.keys(taskEditCounts)
+            ]);
+            const creators = Array.from(allCreators).sort();
+            
+            // Prepare data arrays
+            const originalTasks = creators.map(creator => originalTaskCounts[creator] || 0);
+            const editTasks = creators.map(creator => taskEditCounts[creator] || 0);
             
             // Destroy existing chart if it exists
             if (chart) {
@@ -304,8 +296,135 @@
                 type: 'bar',
                 data: {
                     labels: creators,
+                    datasets: [
+                        {
+                            label: 'Original Tasks',
+                            data: originalTasks,
+                            backgroundColor: '#3b82f6',
+                            borderColor: '#2563eb',
+                            borderWidth: 0,
+                            borderRadius: { topLeft: 6, bottomLeft: 6, topRight: 0, bottomRight: 0 },
+                            borderSkipped: false,
+                        },
+                        {
+                            label: 'Task Edits',
+                            data: editTasks,
+                            backgroundColor: '#10b981',
+                            borderColor: '#059669',
+                            borderWidth: 0,
+                            borderRadius: { topLeft: 0, bottomLeft: 0, topRight: 6, bottomRight: 6 },
+                            borderSkipped: false,
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                color: '#e5e7eb'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Tasks',
+                                color: '#374151',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: {
+                                color: '#6b7280',
+                                maxRotation: 45
+                            },
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Creator',
+                                color: '#374151',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tasks Created by Each Person (Original vs Edits)',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            color: '#1f2937'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#374151',
+                                font: {
+                                    weight: '500'
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'rect'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#374151',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#f9fafb',
+                            borderColor: '#6b7280',
+                            borderWidth: 1,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    return `${label}: ${context.parsed.x}`;
+                                },
+                                footer: function(tooltipItems) {
+                                    const total = tooltipItems.reduce((sum, item) => sum + item.parsed.x, 0);
+                                    return `Total: ${total}`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        function updateVerifiedChart(taskCounts) {
+            const ctx = document.getElementById('verifiedTaskChart').getContext('2d');
+            
+            const creators = Object.keys(taskCounts);
+            const tasks = Object.values(taskCounts);
+            
+            if (verifiedChart) {
+                verifiedChart.destroy();
+            }
+            
+            verifiedChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: creators,
                     datasets: [{
-                        label: 'Number of Tasks',
+                        label: 'Number of Verified Tasks (≥ 1 solve)',
                         data: tasks,
                         backgroundColor: colors.slice(0, creators.length),
                         borderColor: colors.slice(0, creators.length).map(color => color + '80'),
@@ -321,7 +440,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Tasks Created by Each Person',
+                            text: 'Verified Tasks by Creator (≥ 1 solve)',
                             font: {
                                 size: 18,
                                 weight: 'bold'
@@ -340,7 +459,7 @@
                             cornerRadius: 6,
                             callbacks: {
                                 label: function(context) {
-                                    return `Tasks: ${context.parsed.x}`;
+                                    return `Verified: ${context.parsed.x}`;
                                 }
                             }
                         }
@@ -357,7 +476,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Number of Tasks',
+                                text: 'Number of Verified Tasks',
                                 color: '#374151',
                                 font: {
                                     weight: 'bold'
@@ -390,11 +509,19 @@
             });
         }
 
-        function updateSolvedChart(solvedCounts) {
+        function updateSolvedChart(sessionCounts, solvedCounts) {
             const ctx = document.getElementById('solvedChart').getContext('2d');
             
-            const solvers = Object.keys(solvedCounts);
-            const solved = Object.values(solvedCounts);
+            // Merge solvers from both datasets and sort
+            const allSolvers = new Set([
+                ...Object.keys(sessionCounts || {}),
+                ...Object.keys(solvedCounts || {})
+            ]);
+            const solvers = Array.from(allSolvers).sort();
+            
+            const sessions = solvers.map(s => (sessionCounts && sessionCounts[s]) || 0);
+            const solved = solvers.map(s => (solvedCounts && solvedCounts[s]) || 0);
+            const remaining = solvers.map((_, i) => Math.max(sessions[i] - solved[i], 0));
             
             if (solvedChart) {
                 solvedChart.destroy();
@@ -404,49 +531,36 @@
                 type: 'bar',
                 data: {
                     labels: solvers,
-                    datasets: [{
-                        label: 'Number of Solved Tasks',
-                        data: solved,
-                        backgroundColor: colors.slice(0, solvers.length),
-                        borderColor: colors.slice(0, solvers.length).map(color => color + '80'),
-                        borderWidth: 2,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    }]
+                    datasets: [
+                        {
+                            label: 'Solved Tasks',
+                            data: solved,
+                            backgroundColor: '#10b981',
+                            borderColor: '#059669',
+                            borderWidth: 0,
+                            borderRadius: { topLeft: 6, bottomLeft: 6, topRight: 0, bottomRight: 0 },
+                            borderSkipped: false,
+                            stack: 'A'
+                        },
+                        {
+                            label: 'Failed Tasks',
+                            data: remaining,
+                            backgroundColor: '#94a3b8',
+                            borderColor: '#64748b',
+                            borderWidth: 0,
+                            borderRadius: { topLeft: 0, bottomLeft: 0, topRight: 6, bottomRight: 6 },
+                            borderSkipped: false,
+                            stack: 'A'
+                        }
+                    ]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Tasks Solved by Each Person',
-                            font: {
-                                size: 18,
-                                weight: 'bold'
-                            },
-                            color: '#1f2937'
-                        },
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: '#374151',
-                            titleColor: '#f9fafb',
-                            bodyColor: '#f9fafb',
-                            borderColor: '#6b7280',
-                            borderWidth: 1,
-                            cornerRadius: 6,
-                            callbacks: {
-                                label: function(context) {
-                                    return `Solved: ${context.parsed.x}`;
-                                }
-                            }
-                        }
-                    },
                     scales: {
                         y: {
+                            stacked: true,
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 1,
@@ -457,7 +571,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Number of Solved Tasks',
+                                text: 'Number of Items',
                                 color: '#374151',
                                 font: {
                                     weight: 'bold'
@@ -465,6 +579,7 @@
                             }
                         },
                         x: {
+                            stacked: true,
                             ticks: {
                                 color: '#6b7280',
                                 maxRotation: 45
@@ -482,6 +597,38 @@
                             }
                         }
                     },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Task solving counts',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            color: '#1f2937'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            backgroundColor: '#374151',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#f9fafb',
+                            borderColor: '#6b7280',
+                            borderWidth: 1,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.x}`;
+                                },
+                                footer: function(tooltipItems) {
+                                    const total = tooltipItems.reduce((sum, item) => sum + item.parsed.x, 0);
+                                    return `Total: ${total}`;
+                                }
+                            }
+                        }
+                    },
                     animation: {
                         duration: 1000,
                         easing: 'easeOutQuart'
@@ -489,8 +636,6 @@
                 }
             });
         }
-
-
 
         // Auto-refresh every 5 minutes
         setInterval(loadData, 5 * 60 * 1000);

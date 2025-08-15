@@ -1,10 +1,19 @@
 {
-  "timestamp": "2025-08-13T14:50:22.777165Z",
-  "total_solved_tasks": 36,
-  "total_solvers": 2,
+  "timestamp": "2025-08-15T18:40:13.607452Z",
+  "total_solved_tasks": 37,
+  "total_solvers": 4,
   "solved_task_counts": {
-    "sam": 33,
-    "chris": 3
+    "sam": 26,
+    "chris": 9,
+    "practice": 1,
+    "aldo": 1
   },
-  "updated_date": "2025-08-13 14:50 UTC"
+  "total_sessions": 76,
+  "session_counts": {
+    "sam": 55,
+    "chris": 17,
+    "aldo": 3,
+    "practice": 1
+  },
+  "updated_date": "2025-08-15 18:40 UTC"
 }
