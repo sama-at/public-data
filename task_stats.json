@@ -12,7 +12,8 @@
     "sam": 12,
     "chris": 5,
     "aldo": 1,
-    "addison": 1
+    "addison": 1,
+    "joe": 1
   },
   "verified_task_counts": {
     "chris": 14,
@@ -24,7 +25,7 @@
     "coco": 1
   },
   "verified_tasks_count": 30,
-  "deprecated_tasks_count": 18,
+  "deprecated_tasks_count": 19,
   "unverified_tasks_count": 28,
-  "updated_date": "2025-08-15 22:15 UTC"
+  "updated_date": "2025-08-15 22:41 UTC"
 }
