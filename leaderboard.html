@@ -210,10 +210,13 @@
     </div>
 
     <script>
-        const STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/task_stats.json';
-        // const STATS_URL = 'task_stats.json';
-        const SOLVED_STATS_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/solved_task_stats.json';
-        // const SOLVED_STATS_URL = 'solved_task_stats.json';
+        // Use GitHub API for fresher data (bypasses CDN caching)
+        const STATS_URL = 'https://api.github.com/repos/sama-at/public-data/contents/task_stats.json';
+        const SOLVED_STATS_URL = 'https://api.github.com/repos/sama-at/public-data/contents/solved_task_stats.json';
+        
+        // Fallback to raw URLs if needed
+        const STATS_RAW_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/task_stats.json';
+        const SOLVED_RAW_URL = 'https://raw.githubusercontent.com/sama-at/public-data/main/solved_task_stats.json';
         let chart = null;
         let verifiedChart = null;
         let solvedChart = null;
@@ -225,10 +228,12 @@
             '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'
         ];
 
-        // Append a timestamp to bypass CDN/browser caches and force fresh data
+        // Append a random value to bypass CDN/browser caches and force fresh data
         function bust(url) {
             const sep = url.includes('?') ? '&' : '?';
-            return `${url}${sep}_=${Date.now()}`;
+            const random = Math.random().toString(36).substring(7);
+            const timestamp = Date.now();
+            return `${url}${sep}v=${timestamp}&r=${random}`;
         }
 
         async function loadData() {
@@ -242,21 +247,54 @@
             contentEl.style.display = 'none';
             
             try {
-                const [createdResp, solvedResp] = await Promise.all([
-                    fetch(bust(STATS_URL), { cache: 'no-store', mode: 'cors' }),
-                    fetch(bust(SOLVED_STATS_URL), { cache: 'no-store', mode: 'cors' })
-                ]);
-                if (!createdResp.ok) {
-                    throw new Error(`HTTP error (created)! status: ${createdResp.status}`);
-                }
-                if (!solvedResp.ok) {
-                    throw new Error(`HTTP error (solved)! status: ${solvedResp.status}`);
-                }
+                // Try GitHub API first for fresh data
+                console.log('Fetching fresh data from GitHub API...');
                 
-                const [data, solvedData] = await Promise.all([
-                    createdResp.json(),
-                    solvedResp.json()
+                const [createdResp, solvedResp] = await Promise.all([
+                    fetch(STATS_URL, { 
+                        cache: 'no-store',
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }),
+                    fetch(SOLVED_STATS_URL, { 
+                        cache: 'no-store',
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    })
                 ]);
+                
+                let data, solvedData;
+                
+                if (createdResp.ok && solvedResp.ok) {
+                    // GitHub API returns base64-encoded content
+                    const [createdApiData, solvedApiData] = await Promise.all([
+                        createdResp.json(),
+                        solvedResp.json()
+                    ]);
+                    
+                    // Decode base64 content
+                    data = JSON.parse(atob(createdApiData.content.replace(/\n/g, '')));
+                    solvedData = JSON.parse(atob(solvedApiData.content.replace(/\n/g, '')));
+                    console.log('Using fresh data from GitHub API');
+                } else {
+                    // Fallback to raw URLs with cache busting
+                    console.log('GitHub API failed, falling back to raw URLs...');
+                    const [rawCreatedResp, rawSolvedResp] = await Promise.all([
+                        fetch(bust(STATS_RAW_URL), { cache: 'no-store' }),
+                        fetch(bust(SOLVED_RAW_URL), { cache: 'no-store' })
+                    ]);
+                    
+                    if (!rawCreatedResp.ok || !rawSolvedResp.ok) {
+                        throw new Error('Failed to fetch data from both API and raw URLs');
+                    }
+                    
+                    [data, solvedData] = await Promise.all([
+                        rawCreatedResp.json(),
+                        rawSolvedResp.json()
+                    ]);
+                }
                 
                 // Update verified task progress bar
                 const totalVerified = Object.values(data.verified_task_counts || {}).reduce((sum, count) => sum + count, 0);
