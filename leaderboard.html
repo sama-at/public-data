@@ -225,6 +225,12 @@
             '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'
         ];
 
+        // Append a timestamp to bypass CDN/browser caches and force fresh data
+        function bust(url) {
+            const sep = url.includes('?') ? '&' : '?';
+            return `${url}${sep}_=${Date.now()}`;
+        }
+
         async function loadData() {
             const loadingEl = document.getElementById('loading');
             const errorEl = document.getElementById('error');
@@ -237,8 +243,8 @@
             
             try {
                 const [createdResp, solvedResp] = await Promise.all([
-                    fetch(STATS_URL),
-                    fetch(SOLVED_STATS_URL)
+                    fetch(bust(STATS_URL), { cache: 'no-store', mode: 'cors' }),
+                    fetch(bust(SOLVED_STATS_URL), { cache: 'no-store', mode: 'cors' })
                 ]);
                 if (!createdResp.ok) {
                     throw new Error(`HTTP error (created)! status: ${createdResp.status}`);
