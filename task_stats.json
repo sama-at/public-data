@@ -23,10 +23,11 @@
     "aldo": 3,
     "joe": 3,
     "addison": 3,
-    "coco": 1
+    "coco": 1,
+    "jesse": 1
   },
-  "verified_tasks_count": 33,
+  "verified_tasks_count": 34,
   "deprecated_tasks_count": 22,
-  "unverified_tasks_count": 30,
-  "updated_date": "2025-08-18 16:21 UTC"
+  "unverified_tasks_count": 29,
+  "updated_date": "2025-08-18 17:07 UTC"
 }
