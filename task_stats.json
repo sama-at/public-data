@@ -18,14 +18,14 @@
   "verified_task_counts": {
     "chris": 14,
     "sam": 5,
+    "aviv": 4,
     "aldo": 3,
+    "joe": 3,
     "addison": 3,
-    "joe": 2,
-    "aviv": 2,
     "coco": 1
   },
-  "verified_tasks_count": 30,
+  "verified_tasks_count": 33,
   "deprecated_tasks_count": 22,
-  "unverified_tasks_count": 30,
-  "updated_date": "2025-08-17 19:45 UTC"
+  "unverified_tasks_count": 27,
+  "updated_date": "2025-08-18 12:23 UTC"
 }
