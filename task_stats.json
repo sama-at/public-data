@@ -12,16 +12,16 @@
   "task_edit_counts": {
     "sam": 13,
     "chris": 11,
+    "addison": 4,
     "joe": 4,
     "aldo": 3,
     "jesse": 2,
-    "addison": 1,
     "aviv": 1,
     "coco": 1
   },
   "verified_task_counts": {
     "chris": 18,
-    "sam": 15,
+    "sam": 16,
     "joe": 6,
     "aldo": 5,
     "aviv": 5,
@@ -29,8 +29,8 @@
     "jesse": 3,
     "coco": 1
   },
-  "verified_tasks_count": 56,
-  "deprecated_tasks_count": 33,
-  "unverified_tasks_count": 12,
-  "updated_date": "2025-08-19 01:55 UTC"
+  "verified_tasks_count": 57,
+  "deprecated_tasks_count": 36,
+  "unverified_tasks_count": 11,
+  "updated_date": "2025-08-19 02:14 UTC"
 }

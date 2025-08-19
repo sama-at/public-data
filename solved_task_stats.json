@@ -1,7 +1,7 @@
 {
-  "timestamp": "2025-08-19T01:55:31.744541Z",
-  "total_solved_tasks": 66,
-  "total_solvers": 7,
+  "timestamp": "2025-08-19T02:14:53.836809Z",
+  "total_solved_tasks": 67,
+  "total_solvers": 8,
   "solved_task_counts": {
     "sam": 31,
     "chris": 12,
@@ -9,9 +9,10 @@
     "joe": 6,
     "coco": 4,
     "aldo": 3,
-    "aviv": 3
+    "aviv": 3,
+    "addison": 1
   },
-  "total_sessions": 105,
+  "total_sessions": 109,
   "session_counts": {
     "sam": 48,
     "chris": 20,
@@ -19,8 +20,8 @@
     "jesse": 9,
     "coco": 7,
     "aldo": 6,
-    "aviv": 4,
-    "addison": 1
+    "addison": 5,
+    "aviv": 4
   },
-  "updated_date": "2025-08-19 01:55 UTC"
+  "updated_date": "2025-08-19 02:14 UTC"
 }
