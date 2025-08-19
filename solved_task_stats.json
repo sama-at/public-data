@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-19T17:50:10.214105Z",
+  "timestamp": "2025-08-19T18:06:03.286125Z",
   "total_solved_tasks": 79,
   "total_solvers": 8,
   "solved_task_counts": {
@@ -12,16 +12,16 @@
     "aldo": 3,
     "addison": 1
   },
-  "total_sessions": 124,
+  "total_sessions": 125,
   "session_counts": {
     "sam": 52,
     "chris": 20,
     "joe": 16,
+    "aviv": 9,
     "jesse": 9,
-    "aviv": 8,
     "coco": 8,
     "aldo": 6,
     "addison": 5
   },
-  "updated_date": "2025-08-19 17:50 UTC"
+  "updated_date": "2025-08-19 18:06 UTC"
 }
