@@ -20,17 +20,17 @@
     "coco": 1
   },
   "verified_task_counts": {
-    "chris": 29,
+    "chris": 28,
     "sam": 24,
-    "joe": 7,
     "aldo": 6,
+    "joe": 6,
     "jesse": 5,
     "aviv": 5,
     "addison": 4,
     "coco": 1
   },
-  "verified_tasks_count": 81,
-  "deprecated_tasks_count": 48,
+  "verified_tasks_count": 79,
+  "deprecated_tasks_count": 50,
   "unverified_tasks_count": 10,
-  "updated_date": "2025-08-20 19:07 UTC"
+  "updated_date": "2025-08-20 19:10 UTC"
 }
