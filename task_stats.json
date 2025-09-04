@@ -13,7 +13,7 @@
     "chris": 17,
     "sam": 16,
     "joe": 8,
-    "addison": 6,
+    "addison": 7,
     "aldo": 5,
     "jesse": 4,
     "aviv": 1,
@@ -30,7 +30,7 @@
     "coco": 1
   },
   "verified_tasks_count": 82,
-  "deprecated_tasks_count": 52,
+  "deprecated_tasks_count": 53,
   "unverified_tasks_count": 11,
   "updated_date": "2025-09-04 08:30 UTC"
 }
