@@ -12,8 +12,8 @@
   "task_edit_counts": {
     "chris": 17,
     "sam": 16,
+    "addison": 8,
     "joe": 8,
-    "addison": 7,
     "aldo": 5,
     "jesse": 4,
     "aviv": 1,
@@ -30,7 +30,7 @@
     "coco": 1
   },
   "verified_tasks_count": 82,
-  "deprecated_tasks_count": 53,
+  "deprecated_tasks_count": 54,
   "unverified_tasks_count": 11,
-  "updated_date": "2025-09-04 08:36 UTC"
+  "updated_date": "2025-09-04 08:38 UTC"
 }
